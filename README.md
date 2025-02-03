@@ -61,7 +61,7 @@ npm install
 
 1. Crie um projeto no [Firebase](https://firebase.google.com/).
 2. No console do Firebase, configure o Firestore e a autenticação com o Google.
-3. Baixe o arquivo `serviceAcountKey.json` e coloque na pasta `src/config`:
+3. Baixe o arquivo `serviceAcountKey.json` e coloque na pasta `raiz do projeto, antes de src`:
 
 ### 4. Executar o Servidor
 
