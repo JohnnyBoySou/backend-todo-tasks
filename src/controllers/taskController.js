@@ -1,10 +1,15 @@
 const { db } = require("../config/firebase");
-const { formatDistanceToNow, format } = require('date-fns');
-const { ptBR } = require('date-fns/locale');
+const { formatDistanceToNow, format } = require("date-fns");
+const { ptBR } = require("date-fns/locale");
 
+// GET: Buscar todas as tarefas
 exports.getTasks = async (req, res) => {
   try {
     const tasksSnapshot = await db.collection("tasks").get();
+    if (tasksSnapshot.empty) {
+      return res.status(404).json({ error: "Nenhuma tarefa encontrada" });
+    }
+
     const tasks = tasksSnapshot.docs.map((doc) => {
       const data = doc.data();
       const createdAt = data.createdAt.toDate();
@@ -13,58 +18,66 @@ exports.getTasks = async (req, res) => {
         ...data,
         createdAt: {
           read: formatDistanceToNow(createdAt, { addSuffix: true, locale: ptBR }),
-          date: format(createdAt, 'dd/MM/yyyy', { locale: ptBR })  
-        }};
+          date: format(createdAt, "dd/MM/yyyy", { locale: ptBR }),
+        },
+      };
     });
-    setTimeout(() => {
-      return res.status(200).json(tasks);
-    }, 2000);
+    return res.status(200).json(tasks);
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ error: "Erro ao buscar tarefas" });
+    console.error("Erro ao buscar tarefas:", error);
+    return res.status(500).json({ error: "Erro ao buscar tarefas no banco de dados" });
   }
 };
 
-exports.createTask = async (req, res) => {
+// CREATE: Criar uma nova tarefa
+exports.createTask = async ({ title, description, status }) => {
+  if (!title || !status) {
+    throw new Error("Título e status são obrigatórios");
+  }
+
   try {
-    const { title, description, finishDate } = req.body;
-    const newTask = { title, description, status: "TODO", createdAt: new Date() };
-    if (finishDate) {
-      newTask.finishDate = finishDate;
-    }
+    const newTask = { title, description, status, createdAt: new Date() };
     const taskRef = await db.collection("tasks").add(newTask);
-    setTimeout(() => {
-      return res.status(201).json({ id: taskRef.id, ...newTask });
-    }, 3000);
+    const task = { id: taskRef.id, ...newTask };
+    return task;
   } catch (error) {
-    return res.status(500).json({ error: "Erro ao criar tarefa" });
+    console.error("Erro ao criar tarefa:", error);
+    throw new Error("Erro ao criar tarefa no banco de dados");
   }
 };
 
-exports.updateTask = async (req, res) => {
+// UPDATE: Atualizar tarefa existente
+exports.updateTask = async (id, updates) => {
   try {
-    const { id } = req.params;
-    const updates = req.body;
+    const taskDoc = await db.collection("tasks").doc(id).get();
+    if (!taskDoc.exists) {
+      throw new Error("Tarefa não encontrada");
+    }
 
     await db.collection("tasks").doc(id).update(updates);
-    return res.status(200).json({ id, ...updates });
+    return { id, ...updates };
   } catch (error) {
-    return res.status(500).json({ error: "Erro ao atualizar tarefa" });
+    console.error("Erro ao atualizar tarefa:", error);
+    throw new Error("Erro ao atualizar tarefa no banco de dados");
   }
 };
 
-exports.deleteTask = async (req, res) => {
+// DELETE: Deletar tarefa
+exports.deleteTask = async (id) => {
   try {
-    const { id } = req.params;
+    const taskDoc = await db.collection("tasks").doc(id).get();
+    if (!taskDoc.exists) {
+      throw new Error("Tarefa não encontrada");
+    }
+
     await db.collection("tasks").doc(id).delete();
-    setTimeout(() => {
-      return res.status(200).json({ message: "Tarefa removida com sucesso" });
-    }, 3000);
   } catch (error) {
-    return res.status(500).json({ error: "Erro ao deletar tarefa" });
+    console.error("Erro ao deletar tarefa:", error);
+    throw new Error("Erro ao deletar tarefa no banco de dados");
   }
 };
-//FILTER
+
+// GET: Filtrar tarefas por status
 exports.getTasksByStatus = async (req, res) => {
   try {
     const { status } = req.query;
@@ -75,6 +88,11 @@ exports.getTasksByStatus = async (req, res) => {
     } else {
       tasksSnapshot = await db.collection("tasks").where("status", "==", status).get();
     }
+
+    if (tasksSnapshot.empty) {
+      return res.status(404).json({ error: `Nenhuma tarefa encontrada com status ${status}` });
+    }
+
     const tasks = tasksSnapshot.docs.map((doc) => {
       const data = doc.data();
       const createdAt = data.createdAt.toDate();
@@ -83,24 +101,35 @@ exports.getTasksByStatus = async (req, res) => {
         ...data,
         createdAt: {
           read: formatDistanceToNow(createdAt, { addSuffix: true, locale: ptBR }),
-          date: format(createdAt, 'dd/MM/yyyy', { locale: ptBR })
-        }
+          date: format(createdAt, "dd/MM/yyyy", { locale: ptBR }),
+        },
       };
     });
     return res.status(200).json(tasks);
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ error: "Erro ao buscar tarefas" });
+    console.error("Erro ao buscar tarefas por status:", error);
+    return res.status(500).json({ error: "Erro ao buscar tarefas no banco de dados" });
   }
 };
-//PESQUISAR POR NOME 
+
+// GET: Buscar tarefas pelo título
 exports.getTasksByTitle = async (req, res) => {
   try {
     const { title } = req.query;
+    if (!title) {
+      return res.status(400).json({ error: "Título é obrigatório para a pesquisa" });
+    }
+
     const tasksSnapshot = await db.collection("tasks").where("title", "==", title).get();
+
+    if (tasksSnapshot.empty) {
+      return res.status(404).json({ error: "Nenhuma tarefa encontrada com esse título" });
+    }
+
     const tasks = tasksSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     return res.status(200).json(tasks);
   } catch (error) {
-    return res.status(500).json({ error: "Erro ao buscar tarefas" });
+    console.error("Erro ao buscar tarefas pelo título:", error);
+    return res.status(500).json({ error: "Erro ao buscar tarefas no banco de dados" });
   }
 };
