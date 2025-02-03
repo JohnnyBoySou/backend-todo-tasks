@@ -1,4 +1,3 @@
----
 # Backend - Gerenciamento de Tarefas
 
 ## Desafio
@@ -92,5 +91,8 @@ A aplicação deve possuir testes para garantir o funcionamento adequado das rot
 ## Considerações Finais
 
 Este projeto tem como objetivo servir como base para a construção de um sistema de gerenciamento de tarefas utilizando Firebase para persistência de dados e Google Auth para autenticação.
+
+
+Desenvolvido por [João Sousa](https://github.com/JohnnyBoySou).
 
 ---
