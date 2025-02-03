@@ -71,14 +71,15 @@ npm start
 
 O servidor estará rodando na porta 5000 (ou a porta configurada no `.env`).
 
-## Funcionalidades em Tempo Real
+## 5. Funcionalidades em Tempo Real
 
 O sistema usa o **Socket.io** para emitir eventos de criação, atualização e exclusão de tarefas. Quando uma tarefa é modificada, todos os clientes conectados recebem a atualização em tempo real.
 
-## Testes Unitários
+### 6. Executar os Testes
 
-A aplicação deve possuir testes para garantir o funcionamento adequado das rotas e da manipulação das tarefas. Utilize a ferramenta de testes de sua escolha para validar a aplicação.
-
+```bash
+npm run test
+```
 ## Considerações Finais
 
 Este projeto tem como objetivo servir como base para a construção de um sistema de gerenciamento de tarefas utilizando Firebase para persistência de dados e Google Auth para autenticação.
