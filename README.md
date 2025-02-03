@@ -61,16 +61,7 @@ npm install
 
 1. Crie um projeto no [Firebase](https://firebase.google.com/).
 2. No console do Firebase, configure o Firestore e a autenticação com o Google.
-3. Baixe o arquivo `google-services.json` e configure as variáveis de ambiente no arquivo `.env`:
-
-```env
-FIREBASE_API_KEY=your-api-key
-FIREBASE_AUTH_DOMAIN=your-auth-domain
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_STORAGE_BUCKET=your-storage-bucket
-FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
-FIREBASE_APP_ID=your-app-id
-```
+3. Baixe o arquivo `serviceAcountKey.json` e coloque na pasta `src/config`:
 
 ### 4. Executar o Servidor
 
