@@ -53,12 +53,10 @@ exports.updateTask = async (id, updates) => {
     if (!taskDoc.exists) {
       throw new Error("Tarefa não encontrada");
     }
-
     await db.collection("tasks").doc(id).update(updates);
     return { id, ...updates };
   } catch (error) {
-    console.error("Erro ao atualizar tarefa:", error);
-    throw new Error("Erro ao atualizar tarefa no banco de dados");
+    throw new Error(error.message || "Erro ao atualizar tarefa no banco de dados");
   }
 };
 
@@ -72,8 +70,7 @@ exports.deleteTask = async (id) => {
 
     await db.collection("tasks").doc(id).delete();
   } catch (error) {
-    console.error("Erro ao deletar tarefa:", error);
-    throw new Error("Erro ao deletar tarefa no banco de dados");
+    throw new Error(error.message || "Erro ao deletar tarefa no banco de dados");
   }
 };
 
@@ -81,8 +78,11 @@ exports.deleteTask = async (id) => {
 exports.getTasksByStatus = async (req, res) => {
   try {
     const { status } = req.query;
-    let tasksSnapshot;
+    if (!status) {
+      return res.status(400).json({ error: "Status é obrigatório" });
+    }
 
+    let tasksSnapshot;
     if (status === "ALL") {
       tasksSnapshot = await db.collection("tasks").orderBy("createdAt", "desc").get();
     } else {
@@ -105,10 +105,11 @@ exports.getTasksByStatus = async (req, res) => {
         },
       };
     });
+
     return res.status(200).json(tasks);
   } catch (error) {
-    console.error("Erro ao buscar tarefas por status:", error);
-    return res.status(500).json({ error: "Erro ao buscar tarefas no banco de dados" });
+    console.error("Erro ao buscar tarefas:", error);
+    throw new Error(error.message || "Erro ao atualizar tarefa no banco de dados");
   }
 };
 
