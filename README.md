@@ -47,8 +47,8 @@ Cada tarefa possui os seguintes campos:
 ### 1. Clonar o Repositório
 
 ```bash
-git clone https://github.com/seu-usuario/seu-repositorio.git
-cd seu-repositorio
+git clone https://github.com/JohnnyBoySou/backend-todo-tasks.git
+cd backend-todo-tasks
 ```
 
 ### 2. Instalar Dependências
